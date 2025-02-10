@@ -1,4 +1,5 @@
 import 'package:chat_app/pages/home_page.dart';
+import 'package:chat_app/pages/login/signup.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: false,
       ),
       debugShowCheckedModeBanner: false,
-      home: HomePage()
+      home: Signup()
     );
   }
 }
