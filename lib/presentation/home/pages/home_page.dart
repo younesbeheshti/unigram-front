@@ -1,4 +1,6 @@
-import 'package:chat_app/pages/chat_page.dart';
+import 'dart:io';
+
+import 'package:chat_app/presentation/chat/pages/chat_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -19,16 +21,23 @@ class HomePage extends StatelessWidget {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatPage()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ChatPage(serverUrl: "ws://127.0.0.1:3000/ws"),
+                  ),
+                );
               },
               child: Container(
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10),
                   color: Colors.grey[100],
                 ),
                 height: 70,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                   child: Row(
                     children: [
                       Container(
@@ -43,7 +52,7 @@ class HomePage extends StatelessWidget {
                         width: 15,
                       ),
                       Container(
-                        child: Text("Name"),
+                        child: Text("server"),
                       ),
                     ],
                   ),
@@ -52,7 +61,7 @@ class HomePage extends StatelessWidget {
             );
           },
           separatorBuilder: (context, index) => SizedBox(height: 10),
-          itemCount: 3,
+          itemCount: 1,
         ),
       ),
     );
