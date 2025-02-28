@@ -3,6 +3,6 @@ class AppUrls {
   static const login = "/auth/login";
   static const register = "/auth/register";
   static const userInfo = "/user/";
-  static const contact = "/user/contact";
+  static const contacts = "/user/contact";
   static const WS_SOCKET = "ws://localhost:8080/ws";
 }
