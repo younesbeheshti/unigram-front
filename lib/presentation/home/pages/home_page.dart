@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:chat_app/presentation/chat/pages/chat_page.dart';
+import 'package:chat_app/presentation/contact/pages/contact.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -63,6 +64,14 @@ class HomePage extends StatelessWidget {
           separatorBuilder: (context, index) => SizedBox(height: 10),
           itemCount: 1,
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => Contact()));
+        },
+        child: Icon(Icons.add),
+        backgroundColor: Colors.deepPurple,
       ),
     );
   }
