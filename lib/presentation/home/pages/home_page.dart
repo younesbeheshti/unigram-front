@@ -1,13 +1,26 @@
 import 'dart:io';
 
+import 'package:chat_app/data/ws/client.dart';
 import 'package:chat_app/presentation/chat/pages/chat_page.dart';
 import 'package:chat_app/presentation/contact/pages/contact.dart';
+import 'package:chat_app/service_locator.dart';
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   // List Users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    sl<WebSocketClient>().connect();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +38,7 @@ class HomePage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        ChatPage(serverUrl: "ws://127.0.0.1:3000/ws"),
+                    builder: (context) => ChatPage(receiverId: 1,),
                   ),
                 );
               },

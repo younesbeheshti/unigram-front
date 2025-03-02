@@ -1,6 +1,5 @@
 import "dart:convert";
 
-import "package:chat_app/data/models/chat/chat_model.dart";
 import "package:chat_app/data/models/user/user_model.dart";
 import "package:chat_app/data/sources/storage/secure_storage_service.dart";
 import "package:chat_app/domain/entities/auth/user_entity.dart";
@@ -16,6 +15,7 @@ abstract class UserBackendService {
   Future<List<UserEntity>> getContacts();
 
   Future<List<ChatEntity>> getChats();
+
 }
 
 class UserBackendServiceImpl implements UserBackendService {
@@ -24,6 +24,7 @@ class UserBackendServiceImpl implements UserBackendService {
   @override
   Future<List<UserEntity>> getContacts() async {
     try {
+
       List<UserEntity> contacts = [];
 
       final token = await storage.read(key: "token");
@@ -42,11 +43,13 @@ class UserBackendServiceImpl implements UserBackendService {
           contacts.add(userModel.toEntity());
         }
 
+
         print(data["contacts"]);
         return contacts;
       } else {
         return [];
       }
+
     } catch (e) {
       print(e);
       return [];
@@ -67,42 +70,15 @@ class UserBackendServiceImpl implements UserBackendService {
         final data = jsonDecode(response.body);
         print(data);
       }
-    } catch (e) {
+
+    }catch (e) {
       print(e);
     }
   }
 
   @override
-  Future<List<ChatEntity>> getChats() async {
-    try {
-      List<ChatEntity> chats = [];
-
-      final token = await storage.read(key: "token");
-      final userId = await storage.read(key: "userId");
-
-      final response = await http.get(
-        Uri.parse("${AppUrls.baseURL}${AppUrls.chats}/$userId"),
-        headers: {
-          "Authorization": "Bearer $token",
-        },
-      );
-
-      if (response.statusCode == 200) {
-
-        final data = jsonDecode(response.body);
-
-        for (var chat in data["chats"]) {
-          var chatModel = ChatModel.fromJson(chat);
-          chats.add(chatModel.toEntity());
-        }
-
-        return chats;
-      } else {
-        return [];
-      }
-    } catch (e) {
-      print(e);
-      return [];
-    }
+  Future<List<ChatEntity>> getChats() {
+    // TODO: implement getChats
+    throw UnimplementedError();
   }
 }

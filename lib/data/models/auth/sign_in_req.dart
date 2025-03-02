@@ -1,9 +1,9 @@
 class SignInRequest {
-  final String email;
+  final String username;
   final String password;
 
   const SignInRequest({
-    required this.email,
+    required this.username,
     required this.password,
   });
 }

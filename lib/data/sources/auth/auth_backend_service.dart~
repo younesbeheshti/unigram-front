@@ -25,7 +25,7 @@ class AuthBackendServiceImpl implements AuthBackendService {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(
           {
-            "username": signInReq.username,
+            "email": signInReq.email,
             "password": signInReq.password,
           },
         ),

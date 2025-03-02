@@ -1,10 +1,14 @@
+import 'package:chat_app/data/sources/storage/secure_storage_service.dart';
+import 'package:chat_app/domain/entities/message/message_entity.dart';
 import 'package:flutter/material.dart';
+import 'package:chat_app/data/ws/client.dart';
+import 'package:chat_app/service_locator.dart';
 
-import '../../../data/ws/client.dart';
 
 class ChatPage extends StatefulWidget {
-  final String serverUrl;
-  const ChatPage({super.key, required this.serverUrl});
+  String? title;
+  final int receiverId;
+  ChatPage({super.key,this.title, required this.receiverId});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -12,17 +16,20 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   late WebSocketClient _client;
+  late int userId;
   final TextEditingController _messageController = TextEditingController();
-  final List<Map<String, dynamic>> _messages = []; // Stores messages with sender info
+  final List<MessageRequest> _messages = [];
 
   @override
-  void initState() {
+  void initState() async {
     super.initState();
-    _client = WebSocketClient(widget.serverUrl, onMessageReceived: (message) {
+    userId = await sl<SecureStorageService>().read(key: "userId");
+    _client = sl<WebSocketClient>();
+    _client.onMessageReceived = (MessageRequest message) {
       setState(() {
-        _messages.add({'text': message, 'isUser': false});
+        _messages.add(message);
       });
-    });
+    };
     _client.connect();
   }
 
@@ -32,11 +39,17 @@ class _ChatPageState extends State<ChatPage> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_messageController.text.trim().isNotEmpty) {
-      _client.sendMessage(_messageController.text.trim());
+      final message = MessageRequest(
+        chatId: widget.receiverId,
+        senderId: userId,
+        receiverId: widget.receiverId,
+        content: _messageController.text.trim(),
+      );
+      _client.sendMessage(message);
       setState(() {
-        _messages.add({'text': _messageController.text.trim(), 'isUser': true});
+        _messages.add(message);
       });
       _messageController.clear();
     }
@@ -46,7 +59,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Chat"),
+        title: Text(widget.title ?? "ChatPage"),
         centerTitle: true,
       ),
       body: Column(
@@ -57,9 +70,10 @@ class _ChatPageState extends State<ChatPage> {
                 : ListView.builder(
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                bool isUser = _messages[index]['isUser'];
+                bool isUser = _messages[index].senderId == 101; // Adjust sender ID dynamically
                 return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment:
+                  isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                     padding: const EdgeInsets.all(10),
@@ -68,7 +82,7 @@ class _ChatPageState extends State<ChatPage> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      _messages[index]['text'],
+                      _messages[index].content,
                       style: TextStyle(
                         color: isUser ? Colors.white : Colors.black,
                       ),

@@ -1,12 +1,15 @@
+import 'package:chat_app/data/models/auth/sign_up_req.dart';
+import 'package:chat_app/domain/usecases/auth/sign_up.dart';
 import 'package:chat_app/presentation/home/pages/home_page.dart';
 import 'package:chat_app/presentation/auth/pages/signin.dart';
+import 'package:chat_app/service_locator.dart';
 import 'package:flutter/material.dart';
 
 class Signup extends StatelessWidget {
   Signup({super.key});
 
-  final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _userNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
@@ -31,11 +34,11 @@ class Signup extends StatelessWidget {
                 SizedBox(
                   height: 50,
                 ),
-                _fullNameField(context),
+                _userNameField(context),
                 SizedBox(
                   height: 15,
                 ),
-                _userNameField(context),
+                _emailField(context),
                 SizedBox(
                   height: 15,
                 ),
@@ -43,10 +46,32 @@ class Signup extends StatelessWidget {
                 SizedBox(
                   height: 15,
                 ),
+                ElevatedButton(
+                    onPressed: () async {
+                      var isValid = await sl<SignUpUseCase>().call(
+                        params: SignUpRequest(
+                          username: _userNameController.text,
+                          email: _emailController.text,
+                          password: _passwordController.text,
+                        ),
+                      );
 
-                ElevatedButton(onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
-                }, child: Text("SignUp"))
+                      if (isValid) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HomePage(),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Invalid Credentials"),
+                          ),
+                        );
+                      }
+                    },
+                    child: Text("SignUp"))
               ],
             ),
           ),
@@ -67,20 +92,20 @@ class Signup extends StatelessWidget {
     );
   }
 
-  Widget _fullNameField(BuildContext context) {
-    return TextField(
-      controller: _fullNameController,
-      decoration: InputDecoration(
-        hintText: "Full Name",
-      ).applyDefaults(Theme.of(context).inputDecorationTheme),
-    );
-  }
-
   Widget _userNameField(BuildContext context) {
     return TextField(
       controller: _userNameController,
       decoration: InputDecoration(
         hintText: "username",
+      ).applyDefaults(Theme.of(context).inputDecorationTheme),
+    );
+  }
+
+  Widget _emailField(BuildContext context) {
+    return TextField(
+      controller: _emailController,
+      decoration: InputDecoration(
+        hintText: "email",
       ).applyDefaults(Theme.of(context).inputDecorationTheme),
     );
   }

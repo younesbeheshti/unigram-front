@@ -2,10 +2,12 @@ import 'package:chat_app/data/repository/auth/auth_repository_impl.dart';
 import 'package:chat_app/data/repository/user/user_repo_impl.dart';
 import 'package:chat_app/data/sources/auth/auth_backend_service.dart';
 import 'package:chat_app/data/sources/user/user_backend_service.dart';
+import 'package:chat_app/data/ws/client.dart';
 import 'package:chat_app/domain/repository/auth/auth.dart';
 import 'package:chat_app/domain/repository/user/user_repo.dart';
 import 'package:chat_app/domain/usecases/auth/sign_in.dart';
 import 'package:chat_app/domain/usecases/auth/sign_up.dart';
+import 'package:chat_app/domain/usecases/user/user_chats.dart';
 import 'package:chat_app/domain/usecases/user/user_contacts.dart';
 import 'package:chat_app/domain/usecases/user/user_info.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -54,5 +56,13 @@ Future<void> init() async {
 
   sl.registerSingleton<UserContactsUseCase>(
     UserContactsUseCase(),
+  );
+
+  sl.registerSingleton<UserChatsUseCase>(
+    UserChatsUseCase(),
+  );
+
+  sl.registerSingleton<WebSocketClient>(
+    WebSocketClient(),
   );
 }

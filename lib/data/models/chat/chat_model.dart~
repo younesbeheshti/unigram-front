@@ -1,20 +1,20 @@
 import 'package:chat_app/domain/entities/auth/user_entity.dart';
 
-class UserModel {
+class ChatModel {
   int? id;
-  String? username;
-  String? email;
+  int? user1id;
+  int? user2id;
 
-  UserModel({
+  ChatModel({
     required this.id,
-    required this.username,
-    required this.email,
+    required this.user1id,
+    required this.user2id,
   });
 
-  UserModel.fromJson(Map<String, dynamic> json) {
+  ChatModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    username = json['username'];
-    email = json['email'];
+    user1id = json['username'];
+    user2id = json['email'];
   }
 }
 

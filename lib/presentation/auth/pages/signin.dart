@@ -1,11 +1,14 @@
+import 'package:chat_app/data/models/auth/sign_in_req.dart';
+import 'package:chat_app/domain/usecases/auth/sign_in.dart';
 import 'package:chat_app/presentation/home/pages/home_page.dart';
 import 'package:chat_app/presentation/auth/pages/signup.dart';
+import 'package:chat_app/service_locator.dart';
 import 'package:flutter/material.dart';
 
 class Signin extends StatelessWidget {
   Signin({super.key});
 
-  final TextEditingController _userNameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
@@ -27,7 +30,7 @@ class Signin extends StatelessWidget {
             SizedBox(
               height: 50,
             ),
-            _userNameField(context),
+            _usernameField(context),
             SizedBox(
               height: 15,
             ),
@@ -35,9 +38,31 @@ class Signin extends StatelessWidget {
             SizedBox(
               height: 15,
             ),
-            ElevatedButton(onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
-            }, child: Text("SignIn"))
+            ElevatedButton(
+                onPressed: () async {
+                  var isValid = await sl<SignInUseCase>().call(
+                    params: SignInRequest(
+                      username: _usernameController.text,
+                      password: _passwordController.text,
+                    ),
+                  );
+
+                  if (isValid) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomePage(),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Invalid Credentials"),
+                      ),
+                    );
+                  }
+                },
+                child: Text("SignIn"))
           ],
         ),
       ),
@@ -56,11 +81,11 @@ class Signin extends StatelessWidget {
     );
   }
 
-  Widget _userNameField(BuildContext context) {
+  Widget _usernameField(BuildContext context) {
     return TextField(
-      controller: _userNameController,
+      controller: _usernameController,
       decoration: InputDecoration(
-        hintText: "Username",
+        hintText: "username",
       ).applyDefaults(Theme.of(context).inputDecorationTheme),
     );
   }

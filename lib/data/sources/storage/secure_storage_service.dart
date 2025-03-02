@@ -9,11 +9,11 @@ class SecureStorageService {
   // functions to return the storage
   // Future<FlutterSecureStorage> getStorage() async =>await  _storage;
 
-  Future<void> write({String? key, String? value}) async {
+  Future<void> write({String? key, dynamic value}) async {
     await _storage.write(key: key!, value: value);
   }
 
-  Future<String?> read({String? key}) async {
+  Future<dynamic> read({String? key}) async {
     return await _storage.read(key: key!);
   }
 

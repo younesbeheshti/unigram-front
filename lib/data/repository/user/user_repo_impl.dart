@@ -1,16 +1,23 @@
 import 'package:chat_app/data/sources/user/user_backend_service.dart';
+import 'package:chat_app/domain/entities/auth/user_entity.dart';
+import 'package:chat_app/domain/entities/chat/chat_entity.dart';
 import 'package:chat_app/domain/repository/user/user_repo.dart';
 import 'package:chat_app/service_locator.dart';
 
 class UserRepositoryImpl implements UserRepository {
   @override
-  Future<List> getContacts() async {
+  Future<List<UserEntity>> getContacts() async {
     return await sl<UserBackendService>().getContacts();
   }
 
   @override
   Future<void> getUserInfo() async {
     return await sl<UserBackendService>().getUserInfo();
+  }
+
+  @override
+  Future<List<ChatEntity>> getChats() async {
+    return await sl<UserBackendService>().getChats();
   }
 
 }

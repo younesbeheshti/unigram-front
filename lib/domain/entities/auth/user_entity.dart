@@ -1,5 +1,5 @@
 class UserEntity {
-  String? id;
+  int? id;
   String? username;
   String? email;
 

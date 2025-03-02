@@ -1,4 +1,8 @@
 import 'dart:convert';
+import 'package:chat_app/core/configs/constants/app_url.dart';
+import 'package:chat_app/data/sources/storage/secure_storage_service.dart';
+import 'package:chat_app/domain/entities/message/message_entity.dart';
+import 'package:chat_app/service_locator.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
@@ -6,68 +10,92 @@ import 'package:web_socket_channel/html.dart';
 
 class WebSocketClient {
   late WebSocketChannel _channel;
-  final String serverUrl;
-  Function(String)? onMessageReceived;
+  bool isConnected = false;
 
-  WebSocketClient(this.serverUrl, {this.onMessageReceived});
+  Function(MessageRequest)? onMessageReceived; // Callback set later
+  Function()? onDisconnected;
 
-  void connect() {
-    if (kIsWeb) {
-      _channel = HtmlWebSocketChannel.connect(serverUrl);
-    } else {
-      _channel = IOWebSocketChannel.connect(Uri.parse(serverUrl));
-    }
+  WebSocketClient(); // Constructor is now empty
 
-    _channel.stream.listen(
-          (message) {
-        print('Received raw: $message'); // Debugging
+  void connect() async {
+    try {
+      final token = await sl<SecureStorageService>().read(key: "token");
+      final userId = await sl<SecureStorageService>().read(key: "userId");
 
-        try {
-          final decodedMessage = jsonDecode(message);
+      _channel = IOWebSocketChannel.connect(
+        Uri.parse("${AppUrls.WS_SOCKET}/$userId"),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
 
-          if (decodedMessage is Map<String, dynamic>) {
-            if (decodedMessage.containsKey('message')) {
+      isConnected = true;
+      print('Connected to WebSocket');
+
+      _channel.stream.listen(
+        (message) {
+          print('Received raw: $message');
+
+          try {
+            final decodedMessage = jsonDecode(message);
+
+            if (decodedMessage is Map<String, dynamic> &&
+                decodedMessage.containsKey('message')) {
               var extractedMessage = decodedMessage['message'];
 
-              // Ensure the extracted message is a string
               if (extractedMessage is! String) {
-                extractedMessage = extractedMessage.toString(); // Convert to string if needed
+                extractedMessage = extractedMessage.toString();
               }
 
-              print('Extracted Message: $extractedMessage'); // Debugging
+              print('Extracted Message: $extractedMessage');
 
               if (onMessageReceived != null) {
-                onMessageReceived!(extractedMessage);
+                onMessageReceived!(
+                    MessageRequest.fromJson(decodedMessage['message']));
               }
             } else {
-              print('Warning: Key "message" not found in received data');
+              print('Warning: Invalid message format');
             }
-          } else {
-            print('Warning: Received data is not a valid JSON object');
+          } catch (e) {
+            print('Error decoding message: $e');
           }
-        } catch (e) {
-          print('Error decoding message: $e');
-        }
-      },
-      onError: (error) {
-        print('Error: $error');
-      },
-      onDone: () {
-        print('Connection closed');
-      },
-    );
-
+        },
+        onError: (error) {
+          print('WebSocket error: $error');
+          reconnect();
+        },
+        onDone: () {
+          print('WebSocket connection closed');
+          isConnected = false;
+          onDisconnected?.call();
+          reconnect();
+        },
+      );
+    } catch (e) {
+      print('Error connecting to WebSocket: $e');
+    }
   }
 
-  void sendMessage(String message) {
-    if (_channel.closeCode == null) {
-      _channel.sink.add(jsonEncode({'message': message}));
+  void sendMessage(MessageRequest message) {
+    if (isConnected) {
+      _channel.sink.add(jsonEncode({"message": message.toJson()}));
     } else {
-      print('Connection is closed');
+      print('Cannot send message, WebSocket is disconnected');
     }
   }
 
   void disconnect() {
+    print('Disconnecting from WebSocket...');
+    isConnected = false;
     _channel.sink.close();
+  }
+
+  void reconnect() {
+    if (!isConnected) {
+      print('Attempting to reconnect...');
+      Future.delayed(Duration(seconds: 3), () {
+        connect();
+      });
+    }
   }
 }
