@@ -35,6 +35,9 @@ class _HomePageState extends State<HomePage> {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () {
+
+                // Todo: send the receiver id
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
