@@ -1,4 +1,3 @@
-import 'package:chat_app/domain/entities/auth/user_entity.dart';
 import 'package:chat_app/domain/entities/chat/chat_entity.dart';
 
 class ChatModel {
@@ -14,8 +13,8 @@ class ChatModel {
 
   ChatModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    user1id = json['username'];
-    user2id = json['email'];
+    user1id = json['user1id'];
+    user2id = json['user2id'];
   }
 }
 

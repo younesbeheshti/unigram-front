@@ -6,6 +6,6 @@ abstract class UserRepository {
   Future<void> getUserInfo();
   Future<List<UserEntity>> getContacts();
   Future<List<ChatEntity>> getChats();
-  Future<int> addChat(UserEntity userEntity);
+  Future<void> addChat();
 
 }

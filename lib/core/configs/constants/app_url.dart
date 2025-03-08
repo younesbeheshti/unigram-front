@@ -4,6 +4,7 @@ class AppUrls {
   static const register = "/auth/register";
   static const userInfo = "/user/";
   static const contacts = "/user/contacts";
-  static const chats = "/user/chats";
+  static const addChat = "/user/addChat"
+  static const chats = "/user/chat";
   static const WS_SOCKET = "ws://localhost:8080/ws";
 }

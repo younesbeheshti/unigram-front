@@ -1,4 +1,5 @@
 import "dart:convert";
+import "dart:ffi";
 
 import "package:chat_app/data/models/chat/chat_model.dart";
 import "package:chat_app/data/models/user/user_model.dart";
@@ -16,6 +17,8 @@ abstract class UserBackendService {
   Future<List<UserEntity>> getContacts();
 
   Future<List<ChatEntity>> getChats();
+
+  Future<int> addChat(UserEntity userEntity);
 }
 
 class UserBackendServiceImpl implements UserBackendService {
@@ -78,20 +81,19 @@ class UserBackendServiceImpl implements UserBackendService {
       List<ChatEntity> chats = [];
 
       final token = await storage.read(key: "token");
-      final userId = await storage.read(key: "userId");
 
       final response = await http.get(
-        Uri.parse("${AppUrls.baseURL}${AppUrls.chats}/$userId"),
+        Uri.parse("${AppUrls.baseURL}${AppUrls.chats}"),
         headers: {
           "Authorization": "Bearer $token",
         },
       );
 
       if (response.statusCode == 200) {
-
+        print("getting chats");
         final data = jsonDecode(response.body);
-
-        for (var chat in data["chats"]) {
+        print(data);
+        for (var chat in data["chat"]) {
           var chatModel = ChatModel.fromJson(chat);
           chats.add(chatModel.toEntity());
         }
@@ -105,4 +107,36 @@ class UserBackendServiceImpl implements UserBackendService {
       return [];
     }
   }
+
+  @override
+  Future<int> addChat(UserEntity userEntity) async {
+    try {
+      final token = await storage.read(key: "token");
+      final userId = await storage.read(key: "userId");
+      late var data;
+      final response = await http.post(Uri.parse("${AppUrls.baseURL}/"),headers: {
+        "Authorization": "Bearer $token",
+      },
+        body: jsonEncode(
+          {
+            "user1id": int.parse(userId),
+            "user2id": userEntity.id,
+          },
+        )
+      );
+
+
+      if (response.statusCode == 200) {
+        data = jsonDecode(response.body);
+      }
+
+      return data["chat_id"];
+
+    }catch (e) {
+      print(e);
+      return 0;
+    }
+  }
+
+
 }

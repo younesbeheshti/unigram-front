@@ -14,7 +14,6 @@ abstract class AuthBackendService {
 }
 
 class AuthBackendServiceImpl implements AuthBackendService {
-
   final storage = sl<SecureStorageService>();
 
   @override
@@ -31,18 +30,26 @@ class AuthBackendServiceImpl implements AuthBackendService {
         ),
       );
 
-
       if (response.statusCode == 200) {
         print("login successful");
         final data = jsonDecode(response.body);
+
+        print(data);
+
         final token = data["token"];
-        final int userId = data["userid"];
+        final userId = data["userid"];
 
         await storage.write(key: "token", value: token);
-        await storage.write(key: "userId", value: userId);
+        // print(userId);
+        try {
+          await storage.write(key: "userId", value: userId.toString());
+        } catch (e) {
+          print(e);
+        }
 
+        print("userid -> ${await storage.read(key: "userId")}");
         return true;
-      }else {
+      } else {
         return false;
       }
     } catch (e) {
@@ -72,12 +79,12 @@ class AuthBackendServiceImpl implements AuthBackendService {
         final data = jsonDecode(response.body);
         print(data);
         final token = data["token"];
-        final int userId = data["userid"];
+        final userId = data["userid"];
 
         await storage.write(key: "token", value: token);
-        await storage.write(key: "userId", value: userId);
+        await storage.write(key: "userId", value: userId.toString());
         return true;
-      }else {
+      } else {
         return false;
       }
     } catch (e) {

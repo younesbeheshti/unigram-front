@@ -69,10 +69,14 @@ class _ContactState extends State<Contact> {
                       itemBuilder: (context, index) {
                         return GestureDetector(
                           onTap: () async {
+
+
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ChatPage(
+                                  title: state.contacts[index].username,
                                   receiverId: state.contacts[index].id!,
                                 ),
                               ),

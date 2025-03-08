@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:js_interop';
 import 'package:chat_app/core/configs/constants/app_url.dart';
 import 'package:chat_app/data/sources/storage/secure_storage_service.dart';
 import 'package:chat_app/domain/entities/message/message_entity.dart';
@@ -20,22 +21,28 @@ class WebSocketClient {
   void connect() async {
     try {
       final token = await sl<SecureStorageService>().read(key: "token");
-      final userId = await sl<SecureStorageService>().read(key: "userId");
 
-      _channel = IOWebSocketChannel.connect(
-        Uri.parse("${AppUrls.WS_SOCKET}/$userId"),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      );
+      final uri = Uri.parse("${AppUrls.WS_SOCKET}?token=$token");
+
+      if (kIsWeb) {
+        _channel = HtmlWebSocketChannel.connect(uri.toString());
+      } else {
+        _channel = IOWebSocketChannel.connect(
+          uri,
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+      }
 
       isConnected = true;
       print('Connected to WebSocket');
 
       _channel.stream.listen(
         (message) {
-          print('Received raw: $message');
+          print('Received raw: ${message}');
 
+          //TODO : message type has to be a MessageRequest
           try {
             final decodedMessage = jsonDecode(message);
 
@@ -79,6 +86,8 @@ class WebSocketClient {
   void sendMessage(MessageRequest message) {
     if (isConnected) {
       _channel.sink.add(jsonEncode({"message": message.toJson()}));
+
+      print("message: ${message.toJson()}");
     } else {
       print('Cannot send message, WebSocket is disconnected');
     }

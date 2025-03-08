@@ -1,3 +1,4 @@
+import 'package:chat_app/presentation/auth/pages/signin.dart';
 import 'package:chat_app/presentation/auth/pages/signup.dart';
 import 'package:chat_app/service_locator.dart';
 import 'package:flutter/foundation.dart';
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: false,
       ),
       debugShowCheckedModeBanner: false,
-      home: Signup()
+      home: Signin()
     );
   }
 }

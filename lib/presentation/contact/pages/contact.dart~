@@ -1,87 +1,80 @@
-import 'package:chat_app/data/ws/client.dart';
+import 'package:chat_app/data/sources/storage/secure_storage_service.dart';
 import 'package:chat_app/presentation/chat/pages/chat_page.dart';
-import 'package:chat_app/presentation/contact/pages/contact.dart';
-import 'package:chat_app/presentation/home/bloc/chats_cubit.dart';
-import 'package:chat_app/presentation/home/bloc/chats_state.dart';
+import 'package:chat_app/presentation/contact/bloc/contacts_cubit.dart';
+import 'package:chat_app/presentation/contact/bloc/contacts_state.dart';
 import 'package:chat_app/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class HomePage extends StatefulWidget {
-  HomePage({super.key});
+class Contact extends StatefulWidget {
+  const Contact({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<Contact> createState() => _ContactState();
 }
 
-class _HomePageState extends State<HomePage> {
-
-  @override
-  void initState() {
-    super.initState();
-    sl<WebSocketClient>().connect();
-  }
-
+class _ContactState extends State<Contact> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text("Contact"),
         centerTitle: true,
-        title: Text("Unigram"),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _chats(context),
+            _contactList(),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => Contact()));
-        },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.deepPurple,
       ),
     );
   }
 
-  Widget _chats(BuildContext context) {
+  Widget _contactList() {
     return BlocProvider(
-      create: (context) => ChatsCubit()..getChats(),
+      create: (context) => ContactsCubit()..getContacts(),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            BlocBuilder<ChatsCubit, ChatsState>(
+            SizedBox(
+              height: 20,
+            ),
+            BlocBuilder<ContactsCubit, ContactsState>(
               builder: (context, state) {
-                if (state is ChatsListInitial) {
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
+                if (state is ContactsInitial) {
+                  return Center(child: CircularProgressIndicator());
                 }
 
-                if (state is ChatsListLoaded) {
-                  if (state.chats.isEmpty) {
+                if (state is ContactsLoaded) {
+                  if (state.contacts.isEmpty) {
                     return Center(
-                      child: Text("NO Chats yet..."),
+                      child: Text("NO CONTACT"),
                     );
                   }
 
                   return Flexible(
                     child: ListView.separated(
                       shrinkWrap: true,
+                      separatorBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2.0),
+                        child: Divider(
+                          height: 0.2,
+                        ),
+                      ),
+                      itemCount: state.contacts.length,
                       itemBuilder: (context, index) {
                         return GestureDetector(
-                          onTap: () {
+                          onTap: () async {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ChatPage(
-                                  receiverId: state.chats[index].user2id!,
+                                  title: state.contacts[index].username,
+                                  receiverId: state.contacts[index].id!,
                                 ),
                               ),
                             );
@@ -94,7 +87,7 @@ class _HomePageState extends State<HomePage> {
                             height: 70,
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 10),
+                                  vertical: 10, horizontal: 5),
                               child: Row(
                                 children: [
                                   Container(
@@ -109,7 +102,8 @@ class _HomePageState extends State<HomePage> {
                                     width: 15,
                                   ),
                                   Container(
-                                    child: Text("server"),
+                                    child:
+                                        Text(state.contacts[index].username!),
                                   ),
                                 ],
                               ),
@@ -117,19 +111,12 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
-                      separatorBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2.0),
-                        child: Divider(
-                          height: 0.2,
-                        ),
-                      ),
-                      itemCount: state.chats.length,
                     ),
                   );
                 }
 
-                if (state is ChatsListError ){
-                  return Center(child: Text("Check your internet connection"));
+                if (state is ContactsError) {
+                  return Center(child: Text("Error"));
                 }
 
                 return Container();

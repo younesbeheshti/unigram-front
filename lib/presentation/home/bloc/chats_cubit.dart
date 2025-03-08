@@ -10,12 +10,6 @@ class ChatsCubit extends Cubit<ChatsState> {
   Future<void> getChats() async {
     List<ChatEntity> chats = await sl<UserRepository>().getChats();
 
-    if (chats.isNotEmpty) {
-      emit(ChatsListLoaded(chats: chats));
-    }else {
-      emit(ChatsListError());
-    }
-
+    emit(ChatsListLoaded(chats: chats));
   }
-
 }
