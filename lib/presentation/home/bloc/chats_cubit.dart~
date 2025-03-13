@@ -13,16 +13,6 @@ class ChatsCubit extends Cubit<ChatsState> {
     List<ChatEntity> chats = await sl<UserRepository>().getChats();
     List<UserEntity> contacts = await sl<UserRepository>().getContacts();
 
-    for (var chat in chats) {
-      print(chat.user1id);
-      print(chat.user2id);
-    }
-
-    for (var contact in contacts) {
-      print(contact.id);
-      print(contact.username);
-    }
-
     Map<int, UserEntity> userMap = {for (var user in contacts) user.id!: user};
 
     List<ChatAndUser> chatUsers = chats.map((chat) {

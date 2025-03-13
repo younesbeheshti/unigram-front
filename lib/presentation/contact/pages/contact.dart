@@ -1,4 +1,5 @@
 import 'package:chat_app/data/sources/storage/secure_storage_service.dart';
+import 'package:chat_app/domain/repository/user/user_repo.dart';
 import 'package:chat_app/presentation/chat/pages/chat_page.dart';
 import 'package:chat_app/presentation/contact/bloc/contacts_cubit.dart';
 import 'package:chat_app/presentation/contact/bloc/contacts_state.dart';
@@ -70,12 +71,14 @@ class _ContactState extends State<Contact> {
                         return GestureDetector(
                           onTap: () async {
 
-
+                            int chatId = await sl<UserRepository>().addChat(state.contacts[index].id!);
+                            print("chat id -> $chatId");
 
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ChatPage(
+                                  chatId: chatId,
                                   title: state.contacts[index].username,
                                   receiverId: state.contacts[index].id!,
                                 ),

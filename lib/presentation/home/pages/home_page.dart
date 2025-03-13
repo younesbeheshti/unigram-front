@@ -1,4 +1,5 @@
 import 'package:chat_app/data/ws/client.dart';
+import 'package:chat_app/domain/repository/user/user_repo.dart';
 import 'package:chat_app/presentation/chat/pages/chat_page.dart';
 import 'package:chat_app/presentation/contact/pages/contact.dart';
 import 'package:chat_app/presentation/home/bloc/chats_cubit.dart';
@@ -76,12 +77,14 @@ class _HomePageState extends State<HomePage> {
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
                         return GestureDetector(
-                          onTap: () {
+                          onTap: () async {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ChatPage(
-                                  receiverId: state.chats[index].user2id!,
+                                  chatId: state.chats[index].chatEntity.id!,
+                                  title: state.chats[index].chatName,
+                                  receiverId: state.chats[index].chatEntity.user2id!,
                                 ),
                               ),
                             );
@@ -109,7 +112,7 @@ class _HomePageState extends State<HomePage> {
                                     width: 15,
                                   ),
                                   Container(
-                                    child: Text("server"),
+                                    child: Text(state.chats[index].chatName),
                                   ),
                                 ],
                               ),

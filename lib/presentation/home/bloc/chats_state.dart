@@ -1,4 +1,4 @@
-import 'package:chat_app/domain/entities/chat/chat_entity.dart';
+import 'package:chat_app/data/models/chat/chat_and_user.dart';
 
 abstract class ChatsState {}
 
@@ -7,7 +7,7 @@ class ChatsListInitial extends ChatsState  {}
 
 
 class ChatsListLoaded extends ChatsState {
-  final List<ChatEntity> chats;
+  final List<ChatAndUser> chats;
 
   ChatsListLoaded({required this.chats});
 }

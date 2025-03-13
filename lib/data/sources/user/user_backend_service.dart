@@ -1,11 +1,11 @@
 import "dart:convert";
-import "dart:ffi";
 
 import "package:chat_app/data/models/chat/chat_model.dart";
 import "package:chat_app/data/models/user/user_model.dart";
 import "package:chat_app/data/sources/storage/secure_storage_service.dart";
 import "package:chat_app/domain/entities/auth/user_entity.dart";
 import "package:chat_app/domain/entities/chat/chat_entity.dart";
+import "package:chat_app/domain/entities/message/message_entity.dart";
 import "package:chat_app/service_locator.dart";
 import "package:http/http.dart" as http;
 
@@ -18,7 +18,9 @@ abstract class UserBackendService {
 
   Future<List<ChatEntity>> getChats();
 
-  Future<int> addChat(UserEntity userEntity);
+  Future<int> addChat(int user2id);
+
+  Future<List<MessageRequest>> getChatMessages(int chatId);
 }
 
 class UserBackendServiceImpl implements UserBackendService {
@@ -30,10 +32,9 @@ class UserBackendServiceImpl implements UserBackendService {
       List<UserEntity> contacts = [];
 
       final token = await storage.read(key: "token");
-      final userId = await storage.read(key: "userId");
-      print(userId);
+
       final response = await http.get(
-        Uri.parse("${AppUrls.baseURL}${AppUrls.contacts}/$userId"),
+        Uri.parse("${AppUrls.baseURL}${AppUrls.contacts}"),
         headers: {"Authorization": "Bearer $token"},
       );
 
@@ -109,34 +110,63 @@ class UserBackendServiceImpl implements UserBackendService {
   }
 
   @override
-  Future<int> addChat(UserEntity userEntity) async {
+  Future<int> addChat(int user2id) async {
     try {
       final token = await storage.read(key: "token");
       final userId = await storage.read(key: "userId");
-      late var data;
-      final response = await http.post(Uri.parse("${AppUrls.baseURL}/"),headers: {
-        "Authorization": "Bearer $token",
-      },
+      final response = await http.post(
+        Uri.parse("${AppUrls.baseURL}${AppUrls.addChat}"),
+        headers: {
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode(
           {
             "user1id": int.parse(userId),
-            "user2id": userEntity.id,
+            "user2id": user2id,
           },
-        )
+        ),
       );
 
-
+      print(response.statusCode);
       if (response.statusCode == 200) {
-        data = jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+        print(data);
+        return data["chat_id"];
+      } else {
+        return 0;
       }
-
-      return data["chat_id"];
-
-    }catch (e) {
+    } catch (e) {
       print(e);
       return 0;
     }
   }
 
+  @override
+  Future<List<MessageRequest>> getChatMessages(int chatId) async {
+    try {
+      final token = await storage.read(key: "token");
 
+      final response = await http.get(
+        Uri.parse("${AppUrls.baseURL}${AppUrls.messages}/$chatId"),
+        headers: {
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print(data);
+        List<MessageRequest> messages = [];
+        for (var message in data["messages"]) {
+          messages.add(MessageRequest.fromJson(message));
+        }
+        return messages;
+      } else {
+        return [];
+      }
+    }catch (e) {
+      print(e);
+      return [];
+    }
+  }
 }
