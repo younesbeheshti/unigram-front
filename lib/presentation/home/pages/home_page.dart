@@ -1,5 +1,4 @@
 import 'package:chat_app/data/ws/client.dart';
-import 'package:chat_app/domain/repository/user/user_repo.dart';
 import 'package:chat_app/presentation/chat/pages/chat_page.dart';
 import 'package:chat_app/presentation/contact/pages/contact.dart';
 import 'package:chat_app/presentation/home/bloc/chats_cubit.dart';
@@ -16,11 +15,19 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late WebSocketClient client;
 
   @override
   void initState() {
     super.initState();
-    sl<WebSocketClient>().connect();
+    client = sl<WebSocketClient>();
+    client.connect();
+  }
+
+  @override
+  void dispose() {
+    client.disconnect();
+    super.dispose();
   }
 
   @override
@@ -33,6 +40,10 @@ class _HomePageState extends State<HomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            _publicChat(),
+            Divider(
+              thickness: 1,
+            ),
             _chats(context),
           ],
         ),
@@ -40,7 +51,11 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => Contact()));
+            context,
+            MaterialPageRoute(
+              builder: (context) => Contact(),
+            ),
+          );
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.deepPurple,
@@ -131,7 +146,7 @@ class _HomePageState extends State<HomePage> {
                   );
                 }
 
-                if (state is ChatsListError ){
+                if (state is ChatsListError) {
                   return Center(child: Text("Check your internet connection"));
                 }
 
@@ -139,6 +154,47 @@ class _HomePageState extends State<HomePage> {
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _publicChat() {
+    return GestureDetector(
+      onTap: () async {
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) =>
+        //   ),
+        // );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.grey[100],
+        ),
+        height: 70,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                decoration: BoxDecoration(
+                  // image:
+                  color: Colors.deepPurple,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              SizedBox(
+                width: 15,
+              ),
+              Container(
+                child: Text("Public Chat"),
+              ),
+            ],
+          ),
         ),
       ),
     );

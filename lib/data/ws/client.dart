@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:js_interop';
 import 'package:chat_app/core/configs/constants/app_url.dart';
 import 'package:chat_app/data/sources/storage/secure_storage_service.dart';
 import 'package:chat_app/domain/entities/message/message_entity.dart';
@@ -19,67 +18,69 @@ class WebSocketClient {
   WebSocketClient(); // Constructor is now empty
 
   void connect() async {
-    try {
-      final token = await sl<SecureStorageService>().read(key: "token");
+    if (!isConnected) {
+      try {
+        final token = await sl<SecureStorageService>().read(key: "token");
 
-      final uri = Uri.parse("${AppUrls.WS_SOCKET}?token=$token");
+        final uri = Uri.parse("${AppUrls.WS_SOCKET}?token=$token");
 
-      if (kIsWeb) {
-        _channel = HtmlWebSocketChannel.connect(uri.toString());
-      } else {
-        _channel = IOWebSocketChannel.connect(
-          uri,
-          headers: {
-            'Authorization': 'Bearer $token',
+        if (kIsWeb) {
+          _channel = HtmlWebSocketChannel.connect(uri.toString());
+        } else {
+          _channel = IOWebSocketChannel.connect(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+            },
+          );
+        }
+
+        isConnected = true;
+        print('Connected to WebSocket');
+
+        _channel.stream.listen(
+          (message) {
+            print('Received raw: ${message}');
+
+            //TODO : message type has to be a MessageRequest
+            try {
+              final decodedMessage = jsonDecode(message);
+
+              if (decodedMessage is Map<String, dynamic> &&
+                  decodedMessage.containsKey('message')) {
+                var extractedMessage = decodedMessage['message'];
+
+                if (extractedMessage is! String) {
+                  extractedMessage = extractedMessage.toString();
+                }
+
+                print('Extracted Message: $extractedMessage');
+
+                if (onMessageReceived != null) {
+                  onMessageReceived!(
+                      MessageRequest.fromJson(decodedMessage['message']));
+                }
+              } else {
+                print('Warning: Invalid message format');
+              }
+            } catch (e) {
+              print('Error decoding message: $e');
+            }
+          },
+          onError: (error) {
+            print('WebSocket error: $error');
+            reconnect();
+          },
+          onDone: () {
+            print('WebSocket connection closed');
+            isConnected = false;
+            onDisconnected?.call();
+            reconnect();
           },
         );
+      } catch (e) {
+        print('Error connecting to WebSocket: $e');
       }
-
-      isConnected = true;
-      print('Connected to WebSocket');
-
-      _channel.stream.listen(
-        (message) {
-          print('Received raw: ${message}');
-
-          //TODO : message type has to be a MessageRequest
-          try {
-            final decodedMessage = jsonDecode(message);
-
-            if (decodedMessage is Map<String, dynamic> &&
-                decodedMessage.containsKey('message')) {
-              var extractedMessage = decodedMessage['message'];
-
-              if (extractedMessage is! String) {
-                extractedMessage = extractedMessage.toString();
-              }
-
-              print('Extracted Message: $extractedMessage');
-
-              if (onMessageReceived != null) {
-                onMessageReceived!(
-                    MessageRequest.fromJson(decodedMessage['message']));
-              }
-            } else {
-              print('Warning: Invalid message format');
-            }
-          } catch (e) {
-            print('Error decoding message: $e');
-          }
-        },
-        onError: (error) {
-          print('WebSocket error: $error');
-          reconnect();
-        },
-        onDone: () {
-          print('WebSocket connection closed');
-          isConnected = false;
-          onDisconnected?.call();
-          reconnect();
-        },
-      );
-    } catch (e) {
-      print('Error connecting to WebSocket: $e');
     }
   }
 

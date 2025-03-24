@@ -1,9 +1,6 @@
 import 'package:chat_app/presentation/auth/pages/signin.dart';
-import 'package:chat_app/presentation/auth/pages/signup.dart';
 import 'package:chat_app/service_locator.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

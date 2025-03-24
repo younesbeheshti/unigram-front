@@ -46,7 +46,6 @@ class UserBackendServiceImpl implements UserBackendService {
           contacts.add(userModel.toEntity());
         }
 
-        print(data["contacts"]);
         return contacts;
       } else {
         return [];
@@ -93,7 +92,7 @@ class UserBackendServiceImpl implements UserBackendService {
       if (response.statusCode == 200) {
         print("getting chats");
         final data = jsonDecode(response.body);
-        print(data);
+        print(data["chat"]);
         for (var chat in data["chat"]) {
           var chatModel = ChatModel.fromJson(chat);
           chats.add(chatModel.toEntity());
@@ -130,7 +129,7 @@ class UserBackendServiceImpl implements UserBackendService {
       print(response.statusCode);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print(data);
+        print("addchat -> $data");
         return data["chat_id"];
       } else {
         return 0;
@@ -155,16 +154,27 @@ class UserBackendServiceImpl implements UserBackendService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print(data);
-        List<MessageRequest> messages = [];
-        for (var message in data["messages"]) {
-          messages.add(MessageRequest.fromJson(message));
+        print("get chats -> $data"); // Debug: print full response
+
+        if (data is! Map ||
+            !data.containsKey("messages") ||
+            data["messages"] is! List) {
+          print("Invalid response format!"); // Debug
+          return [];
         }
+
+        List<MessageRequest> messages = data["messages"]
+            .map<MessageRequest>((message) => MessageRequest.fromJson(message))
+            .toList();
+
+        print("Parsed messages count: ${messages.length}");
         return messages;
       } else {
+        print("sad bob ros");
         return [];
       }
-    }catch (e) {
+    } catch (e) {
+      print("sad younes");
       print(e);
       return [];
     }

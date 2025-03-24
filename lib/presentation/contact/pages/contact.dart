@@ -15,6 +15,7 @@ class Contact extends StatefulWidget {
 }
 
 class _ContactState extends State<Contact> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,7 +73,11 @@ class _ContactState extends State<Contact> {
                           onTap: () async {
 
                             int chatId = await sl<UserRepository>().addChat(state.contacts[index].id!);
+                            int senderId = int.parse(await sl<SecureStorageService>().read(key: "userId"));
                             print("chat id -> $chatId");
+                            print("senderid -> $senderId");
+
+
 
                             Navigator.push(
                               context,

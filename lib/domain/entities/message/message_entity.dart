@@ -3,12 +3,14 @@ class MessageRequest {
   final int senderId;
   final int receiverId;
   final String content;
+  final String? pubChannel;
 
   MessageRequest({
     required this.chatId,
     required this.senderId,
     required this.receiverId,
     required this.content,
+    this.pubChannel,
   });
 
   factory MessageRequest.fromJson(Map<String, dynamic> json) {

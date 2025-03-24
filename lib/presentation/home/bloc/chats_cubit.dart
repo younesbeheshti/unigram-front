@@ -1,4 +1,5 @@
 import 'package:chat_app/data/models/chat/chat_and_user.dart';
+import 'package:chat_app/data/sources/storage/secure_storage_service.dart';
 import 'package:chat_app/domain/entities/auth/user_entity.dart';
 import 'package:chat_app/domain/entities/chat/chat_entity.dart';
 import 'package:chat_app/domain/repository/user/user_repo.dart';
@@ -12,28 +13,34 @@ class ChatsCubit extends Cubit<ChatsState> {
   Future<void> getChats() async {
     List<ChatEntity> chats = await sl<UserRepository>().getChats();
     List<UserEntity> contacts = await sl<UserRepository>().getContacts();
-
-    for (var chat in chats) {
-      print(chat.user1id);
-      print(chat.user2id);
-    }
-
-    for (var contact in contacts) {
-      print(contact.id);
-      print(contact.username);
-    }
+    final int userId = int.parse(await sl<SecureStorageService>().read(key: "userId"));
 
     Map<int, UserEntity> userMap = {for (var user in contacts) user.id!: user};
 
     List<ChatAndUser> chatUsers = chats.map((chat) {
-      UserEntity? user = userMap[chat.user1id] ?? userMap[chat.user2id];
+      int chatUser1 = chat.user1id!;
+      int chatUser2 = chat.user2id!;
+
+      if (chatUser1 != userId) {
+        int temp = chatUser1;
+        chatUser1 = chatUser2;
+        chatUser2 = temp;
+      }
+
+      UserEntity? user = userMap[chatUser2];
+
       return ChatAndUser(
         chatName: user?.username ?? "Unknown",
-        chatEntity: chat,
+        chatEntity: ChatEntity(
+          id: chat.id,
+          user1id: chatUser1,
+          user2id: chatUser2,
+        ),
       );
     }).toList();
 
     emit(ChatsListLoaded(chats: chatUsers));
   }
-
 }
+
+
