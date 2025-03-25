@@ -18,6 +18,9 @@ class AuthBackendServiceImpl implements AuthBackendService {
 
   @override
   Future<bool> signIn(SignInRequest signInReq) async {
+
+    storage.write(key: "username", value: signInReq.username);
+
     try {
       final response = await http.post(
         Uri.parse("${AppUrls.baseURL}${AppUrls.login}"),
@@ -59,16 +62,20 @@ class AuthBackendServiceImpl implements AuthBackendService {
   }
 
   @override
-  Future<bool> signUp(SignUpRequest singUpReq) async {
+  Future<bool> signUp(SignUpRequest signUpReq) async {
+
+    storage.write(key: "username", value: signUpReq.username);
+
+
     try {
       final response = await http.post(
         Uri.parse("${AppUrls.baseURL}${AppUrls.register}"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(
           {
-            "username": singUpReq.username,
-            "email": singUpReq.email,
-            "password": singUpReq.password,
+            "username": signUpReq.username,
+            "email": signUpReq.email,
+            "password": signUpReq.password,
           },
         ),
       );

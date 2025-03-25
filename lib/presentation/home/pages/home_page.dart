@@ -3,6 +3,7 @@ import 'package:chat_app/presentation/chat/pages/chat_page.dart';
 import 'package:chat_app/presentation/contact/pages/contact.dart';
 import 'package:chat_app/presentation/home/bloc/chats_cubit.dart';
 import 'package:chat_app/presentation/home/bloc/chats_state.dart';
+import 'package:chat_app/presentation/public_chat/page/public_chat_page.dart';
 import 'package:chat_app/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -162,12 +163,12 @@ class _HomePageState extends State<HomePage> {
   Widget _publicChat() {
     return GestureDetector(
       onTap: () async {
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) =>
-        //   ),
-        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PublicChatPage(),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(

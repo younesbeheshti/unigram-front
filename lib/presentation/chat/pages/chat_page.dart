@@ -36,24 +36,21 @@ class _ChatPageState extends State<ChatPage> {
     init();
     _client = sl<WebSocketClient>();
     _client.onMessageReceived = (MessageRequest message) {
-      setState(() {
-        _messages.add(message);
-      });
+      if (message.chatId == widget.chatId) {
+        setState(() {
+          _messages.add(message);
+        });
+      }
     };
     _client.connect();
   }
 
   void init() async {
     userId = int.parse(await sl<SecureStorageService>().read(key: "userId"));
-    print("User ID: $userId"); // Debug log
 
     try {
       List<MessageRequest> history =
           await sl<UserRepository>().getChatMessages(widget.chatId);
-
-      print("Fetched messages: ${history.length}"); // Debug log
-      print("chat hst -> $history");
-
       if (history.isNotEmpty) {
         setState(() {
           _messages = history;
@@ -97,8 +94,6 @@ class _ChatPageState extends State<ChatPage> {
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
                       bool isUser = _messages[index].senderId == userId;
-                      print("userid -> $userId");
-                      print("senderid -> ${_messages[index].senderId}");
                       return Align(
                         alignment: isUser
                             ? Alignment.centerRight
