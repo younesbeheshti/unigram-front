@@ -58,7 +58,7 @@ class WebSocketClient {
 
                 if (onMessageReceived != null) {
                   onMessageReceived!(
-                      MessageRequest.fromJson(decodedMessage['message']));
+                      MessageRequest.fromJson(decodedMessage));
                 }
               } else {
                 print('Warning: Invalid message format');
@@ -86,9 +86,9 @@ class WebSocketClient {
 
   void sendMessage(MessageRequest message) {
     if (isConnected) {
-      _channel.sink.add(jsonEncode({"message": message.toJson()}));
+      _channel.sink.add(jsonEncode(message.toJson()));
 
-      print("message: ${message.toJson()}");
+      print("Sending message: ${message.toJson()}");
     } else {
       print('Cannot send message, WebSocket is disconnected');
     }

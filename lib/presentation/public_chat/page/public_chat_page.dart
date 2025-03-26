@@ -1,29 +1,35 @@
+import 'package:chat_app/core/configs/constants/message_type.dart';
 import 'package:chat_app/data/sources/storage/secure_storage_service.dart';
 import 'package:chat_app/data/ws/client.dart';
 import 'package:chat_app/domain/entities/message/message_entity.dart';
 import 'package:chat_app/service_locator.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class PublicChatPage extends StatefulWidget {
-  PublicChatPage({super.key});
+  const PublicChatPage({super.key});
 
   @override
   State<PublicChatPage> createState() => _PublicChatPageState();
 }
 
 class _PublicChatPageState extends State<PublicChatPage> {
-  WebSocketClient _client = sl<WebSocketClient>();
+  final WebSocketClient _client = sl<WebSocketClient>();
   final TextEditingController _messageController = TextEditingController();
-  List<MessageRequest> _messages = [];
+  final List<MessageRequest> _messages = [];
   late int userId;
   late String username;
 
   @override
   void initState() {
-    init();
     super.initState();
+    init();
+  }
+
+  Future<void> init() async {
+    userId = int.parse(await sl<SecureStorageService>().read(key: "userId"));
+    username = await sl<SecureStorageService>().read(key: "username");
+
     _client.onMessageReceived = (MessageRequest message) {
       if (message.chatId == 0) {
         setState(() {
@@ -31,94 +37,115 @@ class _PublicChatPageState extends State<PublicChatPage> {
         });
       }
     };
+
     _client.connect();
+
+    final joinMessage = MessageRequest(
+      messageType: MessageType.JOIN,
+      senderName: username,
+      senderId: userId,
+    );
+    _client.sendMessage(joinMessage);
   }
 
-  void init() async {
-    userId = int.parse(await sl<SecureStorageService>().read(key: "userId"));
-    username = await sl<SecureStorageService>().read(key: "username");
+  void _sendMessage() {
+    final messageText = _messageController.text.trim();
+    if (messageText.isEmpty) return;
+
+    final message = MessageRequest(
+      messageType: MessageType.SEND_MESSAGE,
+      senderName: username,
+      senderId: userId,
+      content: messageText,
+    );
+
+    _client.sendMessage(message);
+    setState(() {
+      _messages.add(message);
+    });
+    _messageController.clear();
   }
 
-  void _sendMessage() async {
-    if (_messageController.text.trim().isNotEmpty) {
-      final message = MessageRequest(
-        chatId: 0,
-        senderName: username,
-        senderId: userId,
-        receiverId: 0,
-        content: _messageController.text.trim(),
-      );
-
-      _client.sendMessage(message);
-      setState(() {
-        _messages.add(message);
-      });
-      _messageController.clear();
-    }
+  void _leaveChat() {
+    final leaveMessage = MessageRequest(
+      messageType: MessageType.LEAVE,
+      senderId: userId,
+      senderName: username,
+    );
+    _client.sendMessage(leaveMessage);
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Public Chat"),
+        leading: IconButton(onPressed: _leaveChat, icon: const Icon(Icons.arrow_back)),
+        title: const Text("Public Chat"),
         centerTitle: true,
       ),
       body: Column(
         children: [
           Expanded(
             child: _messages.isEmpty
-                ? const Center(
-                    child: Text("No message yet..."),
-                  )
+                ? const Center(child: Text("No messages yet..."))
                 : ListView.builder(
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      bool isUser = _messages[index].senderId == userId;
-                      return Align(
-                        alignment: isUser
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                            vertical: 4,
-                            horizontal: 8,
-                          ),
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: isUser ? Colors.blue : Colors.green,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                isUser
-                                    ? username
-                                    : _messages[index].senderName!,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isUser
-                                      ? Colors.grey[300]
-                                      : Colors.grey[800],
-                                ),
-                              ),
-                              SizedBox(
-                                height: 1,
-                              ),
-                              Text(
-                                _messages[index].content,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: isUser ? Colors.white : Colors.black,
-                                ),
-                              ),
-                            ],
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final message = _messages[index];
+                final isUser = message.senderId == userId;
+
+                if (message.messageType == MessageType.SERVER_MESSAGE) {
+                  return Align(
+                    alignment: Alignment.center,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        message.content!,
+                        style: const TextStyle(fontSize: 14, color: Colors.black),
+                      ),
+                    ),
+                  );
+                }
+
+                return Align(
+                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isUser ? Colors.blue : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isUser ? username : message.senderName ?? 'Unknown',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isUser ? Colors.grey[300] : Colors.grey[800],
                           ),
                         ),
-                      );
-                    },
+                        const SizedBox(height: 1),
+                        Text(
+                          message.content ?? '',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isUser ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                );
+              },
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -128,7 +155,6 @@ class _PublicChatPageState extends State<PublicChatPage> {
                   child: TextField(
                     controller: _messageController,
                     maxLines: null,
-                    // Allows dynamic line wrapping
                     decoration: InputDecoration(
                       hintText: "Type a message...",
                       border: OutlineInputBorder(
@@ -138,48 +164,16 @@ class _PublicChatPageState extends State<PublicChatPage> {
                     inputFormatters: [
                       LengthLimitingTextInputFormatter(1000),
                     ],
-                    onChanged: (text) {
-                      List<String> lines = text.split('\n');
-                      String formattedText = lines.map((line) {
-                        return (line.length > 40)
-                            ? line.substring(0, 40)
-                            : line;
-                      }).join('\n');
-
-                      if (formattedText != text) {
-                        _messageController.value = TextEditingValue(
-                          text: formattedText,
-                          selection: TextSelection.collapsed(
-                              offset: formattedText.length),
-                        );
-                      }
-                    },
-                    onSubmitted: (text) {
-                      if (!kIsWeb &&
-                          (defaultTargetPlatform == TargetPlatform.android ||
-                              defaultTargetPlatform == TargetPlatform.iOS)) {
-                        return;
-                      }
-                      _sendMessage();
-                    },
-                    textInputAction: kIsWeb ||
-                            (defaultTargetPlatform == TargetPlatform.windows ||
-                                defaultTargetPlatform == TargetPlatform.linux ||
-                                defaultTargetPlatform == TargetPlatform.macOS)
-                        ? TextInputAction.none
-                        : TextInputAction.newline,
+                    onSubmitted: (_) => _sendMessage(),
                     keyboardType: TextInputType.multiline,
-                    onEditingComplete: () {},
                     focusNode: FocusNode()
                       ..onKeyEvent = (node, event) {
-                        if (event is KeyDownEvent) {
-                          if (event.logicalKey == LogicalKeyboardKey.enter) {
-                            if (HardwareKeyboard.instance.isShiftPressed) {
-                              return KeyEventResult.ignored;
-                            } else {
-                              _sendMessage();
-                              return KeyEventResult.handled;
-                            }
+                        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
+                          if (HardwareKeyboard.instance.isShiftPressed) {
+                            return KeyEventResult.ignored;
+                          } else {
+                            _sendMessage();
+                            return KeyEventResult.handled;
                           }
                         }
                         return KeyEventResult.ignored;

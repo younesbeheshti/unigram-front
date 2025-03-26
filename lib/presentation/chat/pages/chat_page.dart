@@ -107,7 +107,7 @@ class _ChatPageState extends State<ChatPage> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            _messages[index].content,
+                            _messages[index].content!,
                             style: TextStyle(
                               color: isUser ? Colors.white : Colors.black,
                             ),
@@ -125,7 +125,6 @@ class _ChatPageState extends State<ChatPage> {
                   child: TextField(
                     controller: _messageController,
                     maxLines: null,
-                    // Allows dynamic line wrapping
                     decoration: InputDecoration(
                       hintText: "Type a message...",
                       border: OutlineInputBorder(
@@ -133,7 +132,7 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                     ),
                     inputFormatters: [
-                      LengthLimitingTextInputFormatter(1000),
+                      LengthLimitingTextInputFormatter(4096),
                     ],
                     onChanged: (text) {
                       List<String> lines = text.split('\n');
