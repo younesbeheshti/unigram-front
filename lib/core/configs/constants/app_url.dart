@@ -8,4 +8,5 @@ class AppUrls {
   static const chats = "/user/chat";
   static const messages = "/user/chat/messages";
   static const WS_SOCKET = "ws://localhost:8080/ws";
+  static const online_users = "/active-users";
 }

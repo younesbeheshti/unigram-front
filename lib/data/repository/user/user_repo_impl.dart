@@ -31,6 +31,12 @@ class UserRepositoryImpl implements UserRepository {
     return await sl<UserBackendService>().getChatMessages(chatId);
   }
 
+  @override
+  Future<List<UserEntity>> getOnlineUsers() async{
+    return await sl<UserBackendService>().getOnlineUsers();
+  }
+
+
 
 
 }

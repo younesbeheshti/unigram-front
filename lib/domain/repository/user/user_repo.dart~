@@ -9,6 +9,5 @@ abstract class UserRepository {
   Future<List<ChatEntity>> getChats();
   Future<int> addChat(int user2id);
   Future<List<MessageRequest>> getChatMessages(int chatId);
-  Future<List<UserEntity>> getOnlineUsers();
 
 }

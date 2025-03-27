@@ -2,6 +2,7 @@ import 'package:chat_app/core/configs/constants/message_type.dart';
 import 'package:chat_app/data/sources/storage/secure_storage_service.dart';
 import 'package:chat_app/data/ws/client.dart';
 import 'package:chat_app/domain/entities/message/message_entity.dart';
+import 'package:chat_app/presentation/public_chat/page/online_users.dart';
 import 'package:chat_app/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,7 +54,7 @@ class _PublicChatPageState extends State<PublicChatPage> {
     if (messageText.isEmpty) return;
 
     final message = MessageRequest(
-      messageType: MessageType.SEND_MESSAGE,
+      messageType: MessageType.PUBLIC_MESSAGE,
       senderName: username,
       senderId: userId,
       content: messageText,
@@ -80,8 +81,21 @@ class _PublicChatPageState extends State<PublicChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: _leaveChat, icon: const Icon(Icons.arrow_back)),
-        title: const Text("Public Chat"),
+        leading: IconButton(
+          onPressed: _leaveChat,
+          icon: const Icon(Icons.arrow_back),
+        ),
+        title: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const OnlineUsers(),
+              ),
+            );
+          },
+          child: const Text("Public Chat"),
+        ),
         centerTitle: true,
       ),
       body: Column(
@@ -90,62 +104,71 @@ class _PublicChatPageState extends State<PublicChatPage> {
             child: _messages.isEmpty
                 ? const Center(child: Text("No messages yet..."))
                 : ListView.builder(
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                final isUser = message.senderId == userId;
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final message = _messages[index];
+                      final isUser = message.senderId == userId;
 
-                if (message.messageType == MessageType.SERVER_MESSAGE) {
-                  return Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        message.content!,
-                        style: const TextStyle(fontSize: 14, color: Colors.black),
-                      ),
-                    ),
-                  );
-                }
+                      if (message.messageType == MessageType.SERVER_MESSAGE) {
+                        return Align(
+                          alignment: Alignment.center,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 4, horizontal: 8),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              message.content!,
+                              style: const TextStyle(
+                                  fontSize: 14, color: Colors.black),
+                            ),
+                          ),
+                        );
+                      }
 
-                return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: isUser ? Colors.blue : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isUser ? username : message.senderName ?? 'Unknown',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isUser ? Colors.grey[300] : Colors.grey[800],
+                      return Align(
+                        alignment: isUser
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 4, horizontal: 8),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isUser ? Colors.blue : Colors.grey[300],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isUser
+                                    ? username
+                                    : message.senderName ?? 'Unknown',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isUser
+                                      ? Colors.grey[300]
+                                      : Colors.grey[800],
+                                ),
+                              ),
+                              const SizedBox(height: 1),
+                              Text(
+                                message.content ?? '',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isUser ? Colors.white : Colors.black,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 1),
-                        Text(
-                          message.content ?? '',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isUser ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -168,7 +191,8 @@ class _PublicChatPageState extends State<PublicChatPage> {
                     keyboardType: TextInputType.multiline,
                     focusNode: FocusNode()
                       ..onKeyEvent = (node, event) {
-                        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
+                        if (event is KeyDownEvent &&
+                            event.logicalKey == LogicalKeyboardKey.enter) {
                           if (HardwareKeyboard.instance.isShiftPressed) {
                             return KeyEventResult.ignored;
                           } else {

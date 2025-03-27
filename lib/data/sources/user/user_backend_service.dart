@@ -21,6 +21,8 @@ abstract class UserBackendService {
   Future<int> addChat(int user2id);
 
   Future<List<MessageRequest>> getChatMessages(int chatId);
+
+  Future<List<UserEntity>> getOnlineUsers();
 }
 
 class UserBackendServiceImpl implements UserBackendService {
@@ -154,18 +156,15 @@ class UserBackendServiceImpl implements UserBackendService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("get chats -> $data"); // Debug: print full response
+        print("get chats -> $data");
 
-        if (data is! Map ||
-            !data.containsKey("messages") ||
-            data["messages"] is! List) {
-          print("Invalid response format!"); // Debug
-          return [];
+        List<MessageRequest> messages = [];
+
+        for (var message in data["messages"]) {
+          var messageReq = MessageRequest.fromJsonChat(message);
+          print(messageReq);
+          messages.add(messageReq);
         }
-
-        List<MessageRequest> messages = data["messages"]
-            .map<MessageRequest>((message) => MessageRequest.fromJson(message))
-            .toList();
 
         print("Parsed messages count: ${messages.length}");
         return messages;
@@ -175,6 +174,39 @@ class UserBackendServiceImpl implements UserBackendService {
       }
     } catch (e) {
       print("sad younes");
+      print(e);
+      return [];
+    }
+  }
+
+  @override
+  Future<List<UserEntity>> getOnlineUsers() async {
+    try {
+      List<UserEntity> onlineUsers = [];
+
+      final token = await storage.read(key: "token");
+
+      final response = await http.get(
+        Uri.parse("${AppUrls.baseURL}${AppUrls.online_users}"),
+        headers: {"Authorization": "Bearer $token"},
+      );
+
+      print(response.statusCode);
+      print("body -> ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        for (var contact in data["users"]) {
+          var userModel = UserModel.fromJson(contact);
+          onlineUsers.add(userModel.toEntity());
+        }
+
+        return onlineUsers;
+      } else {
+        return [];
+      }
+    } catch (e) {
       print(e);
       return [];
     }

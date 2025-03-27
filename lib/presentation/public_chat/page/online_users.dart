@@ -1,0 +1,159 @@
+import 'package:chat_app/data/sources/storage/secure_storage_service.dart';
+import 'package:chat_app/domain/repository/user/user_repo.dart';
+import 'package:chat_app/presentation/chat/pages/chat_page.dart';
+import 'package:chat_app/presentation/public_chat/bloc/online_users_cubit.dart';
+import 'package:chat_app/presentation/public_chat/bloc/online_users_state.dart';
+import 'package:chat_app/presentation/public_chat/page/public_chat_page.dart';
+import 'package:chat_app/service_locator.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../contact/bloc/contacts_cubit.dart';
+
+class OnlineUsers extends StatelessWidget {
+  const OnlineUsers({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            floating: true,
+            expandedHeight: 160,
+            flexibleSpace: FlexibleSpaceBar(
+              title: const Text("Public Chat"),
+              background: Container(
+                color: Colors.purple,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      height: 60,
+                      width: 60,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.message_outlined),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: _onlineUsersList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _onlineUsersList() {
+    return BlocProvider(
+      create: (context) => OnlineUsersCubit()..getOnlineUsers(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 20,
+            ),
+            BlocBuilder<OnlineUsersCubit, OnlineUsersState>(
+              builder: (context, state) {
+                if (state is OnlineUsersError) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                if (state is OnlineUsersLoaded) {
+                  return Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      separatorBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2.0),
+                        child: Divider(
+                          height: 0.2,
+                        ),
+                      ),
+                      itemCount: state.onlineUsers.length,
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onTap: () async {
+                            int chatId = await sl<UserRepository>()
+                                .addChat(state.onlineUsers[index].id!);
+                            int senderId = int.parse(
+                                await sl<SecureStorageService>()
+                                    .read(key: "userId"));
+                            print("chat id -> $chatId");
+                            print("senderid -> $senderId");
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatPage(
+                                  chatId: chatId,
+                                  title: state.onlineUsers[index].username,
+                                  receiverId: state.onlineUsers[index].id!,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.grey[100],
+                            ),
+                            height: 70,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 5),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 50,
+                                    decoration: BoxDecoration(
+                                      // image:
+                                      color: Colors.deepPurple,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 15,
+                                  ),
+                                  Container(
+                                    child: Text(
+                                        state.onlineUsers[index].username!),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                }
+
+                if (state is OnlineUsersError) {
+                  return Center(child: Text("Error"));
+                }
+
+                return Container();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

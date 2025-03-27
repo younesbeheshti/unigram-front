@@ -7,6 +7,7 @@ import 'package:chat_app/domain/repository/auth/auth.dart';
 import 'package:chat_app/domain/repository/user/user_repo.dart';
 import 'package:chat_app/domain/usecases/auth/sign_in.dart';
 import 'package:chat_app/domain/usecases/auth/sign_up.dart';
+import 'package:chat_app/domain/usecases/user/get_online_users.dart';
 import 'package:chat_app/domain/usecases/user/user_chats.dart';
 import 'package:chat_app/domain/usecases/user/user_contacts.dart';
 import 'package:chat_app/domain/usecases/user/user_info.dart';
@@ -64,5 +65,9 @@ Future<void> init() async {
 
   sl.registerSingleton<WebSocketClient>(
     WebSocketClient(),
+  );
+
+  sl.registerSingleton<GetOnlineUsersUseCase>(
+    GetOnlineUsersUseCase()
   );
 }
