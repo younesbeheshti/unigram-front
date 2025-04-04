@@ -264,6 +264,26 @@ class _PublicChatPageState extends State<PublicChatPage> {
                             final message = _messages[index];
                             final isUser = message.senderId == userId;
 
+                            if (message.messageType == MessageType.SERVER_MESSAGE) {
+                              return Align(
+                                alignment: Alignment.center,
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                      vertical: 4, horizontal: 8),
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[300],
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    message.content!,
+                                    style: const TextStyle(
+                                        fontSize: 14, color: Colors.black),
+                                  ),
+                                ),
+                              );
+                            }
+
                             return Align(
                               alignment: isUser
                                   ? Alignment.centerRight
