@@ -1,16 +1,26 @@
-# chat_app
+# Chat App
 
-A new Flutter project.
+This is a simple chat application built with Flutter and golang.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- User can sign up and sign in to the app.
+- User can send and receive messages to/from other users.
+- User can see the list of online users.
+- User can send message to any of the online users.
 
-A few resources to get you started if this is your first Flutter project:
+## How to run the app
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+1. Clone the repository.
+2. Open the project in your preferred IDE.
+3. Clone the golang server repository.(git clone https://github.com/younesbeheshti/unigram-chat-app.git)
+4. See the README.md file in the golang server repository.
+5. Run `flutter pub get` to get the dependencies.
+6. Run `flutter run` to run the app.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Screenshots
+
+![Sign in page](screenshots/signin.png)
+![Home page](screenshots/home.png)
+![Chat page](screenshots/chat.png)
+![Online users page](screenshots/online_users.png)
