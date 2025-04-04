@@ -1,5 +1,5 @@
 class AppUrls {
-  static const baseURL = "http://localhost:8080";
+  static const baseURL = "http://localhost:15000";
   static const login = "/auth/login";
   static const register = "/auth/register";
   static const userInfo = "/user/";
