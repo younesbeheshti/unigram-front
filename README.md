@@ -17,10 +17,3 @@ This is a simple chat application built with Flutter and golang.
 4. See the README.md file in the golang server repository.
 5. Run `flutter pub get` to get the dependencies.
 6. Run `flutter run` to run the app.
-
-## Screenshots
-
-![Sign in page](screenshots/signin.png)
-![Home page](screenshots/home.png)
-![Chat page](screenshots/chat.png)
-![Online users page](screenshots/online_users.png)
