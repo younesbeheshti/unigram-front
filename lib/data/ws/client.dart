@@ -12,10 +12,10 @@ class WebSocketClient {
   late WebSocketChannel _channel;
   bool isConnected = false;
 
-  Function(MessageRequest)? onMessageReceived; // Callback set later
+  Function(MessageRequest)? onMessageReceived;
   Function()? onDisconnected;
 
-  WebSocketClient(); // Constructor is now empty
+  WebSocketClient();
 
   void connect() async {
     if (!isConnected) {
@@ -42,9 +42,11 @@ class WebSocketClient {
           (message) {
             print('Received raw: ${message}');
 
-            //TODO : message type has to be a MessageRequest
             try {
-              final decodedMessage = jsonDecode(message);
+
+              final decodedMsg = utf8.decode(message);
+
+              final decodedMessage = jsonDecode(decodedMsg);
 
               if (decodedMessage is Map<String, dynamic> &&
                   decodedMessage.containsKey('message')) {
@@ -86,7 +88,10 @@ class WebSocketClient {
 
   void sendMessage(MessageRequest message) {
     if (isConnected) {
-      _channel.sink.add(jsonEncode(message.toJson()));
+
+      final encodeMsg = base64.encode(utf8.encode(jsonEncode(message.toJson())));
+      _channel.sink.add(encodeMsg);
+      // _channel.sink.add(jsonEncode(message.toJson()));
 
       print("Sending message: ${message.toJson()}");
     } else {
