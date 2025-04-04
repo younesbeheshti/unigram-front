@@ -117,3 +117,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - BLoC pattern for state management
 - Clean Architecture by Robert C. Martin
 - Go backend team for the server implementation
+    

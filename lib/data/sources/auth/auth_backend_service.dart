@@ -18,7 +18,6 @@ class AuthBackendServiceImpl implements AuthBackendService {
 
   @override
   Future<bool> signIn(SignInRequest signInReq) async {
-
     storage.write(key: "username", value: signInReq.username);
 
     try {
@@ -44,11 +43,8 @@ class AuthBackendServiceImpl implements AuthBackendService {
 
         await storage.write(key: "token", value: token);
         // print(userId);
-        try {
-          await storage.write(key: "userId", value: userId.toString());
-        } catch (e) {
-          print(e);
-        }
+
+        await storage.write(key: "userId", value: userId.toString());
 
         print("userid -> ${await storage.read(key: "userId")}");
         return true;
@@ -63,9 +59,7 @@ class AuthBackendServiceImpl implements AuthBackendService {
 
   @override
   Future<bool> signUp(SignUpRequest signUpReq) async {
-
     storage.write(key: "username", value: signUpReq.username);
-
 
     try {
       final response = await http.post(

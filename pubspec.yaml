@@ -42,6 +42,9 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   flutter_bloc: ^9.0.0
   equatable: ^2.0.7
+  file_picker: ^6.1.1
+  path_provider: ^2.1.2
+  open_file: ^3.3.2
 
 dev_dependencies:
   flutter_test:
